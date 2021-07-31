@@ -14,6 +14,13 @@ async function readApi(){
 //Se quiser verificar o modelo, acesse o arquivo data-sample.json
 readApi();
 
-function main(){
+async function main(){
+    await readApi();
+    console.log(data);
     //Chame todas as funções dentro da função main;
+}
+main();
+
+function nomeEIdade(data){
+    return `${data.usuario}`
 }
