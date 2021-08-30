@@ -189,6 +189,7 @@ function retornaNome(pagamento) {
       this.status.push(situacao)
       return situacao
     },
+
     verificarDataLocal: function(pagamento) {
       let situacao = false
       let dataAtual = new Date() 
@@ -212,5 +213,5 @@ function retornaNome(pagamento) {
         return false
       }
       return true
-    },
-  }
+    }
+ }
