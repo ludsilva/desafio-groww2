@@ -1,4 +1,6 @@
 //Bloco responsável por chamar os dados da API e escrever na variavel data
+
+
 //Lista de produtos disponíveis na Loja
 const produtosDisponiveis = [
     {
@@ -83,8 +85,8 @@ const cardsAvaiable = [
 ]
 
 
-async function readApi(apiURL = '') {
-    let url = 'https://safe-sierra-45694.herokuapp.com/' + apiURL;
+async function readApi(pagamento) {
+    let url = `https://safe-sierra-45694.herokuapp.com/${pagamento}`;
     try {
         let response = await fetch(url);
         return await response.json();
@@ -101,14 +103,114 @@ async function main() {
     const urlApi = ["pagamento01", "pagamento02", "pagamento03", "pagamento04"];
 
     for (let getUrl of urlApi) {
-        const dataReturn = await readApi(getUrl);
-        //execute as funções aqui
-        const nomeUser = retornaNome(dataReturn);
-        console.log(nomeUser);
+      const dataReturn = await readApi(getUrl);
+      //execute as funções aqui
+      console.log(` ***${getUrl.toUpperCase()}***`)
+      cartao.executar(dataReturn)
     }
 }
 main();
 
-function retornaNome(data) {
-    return `Nome do usuário: ${data.customer.name}`;
-}
+function retornaNome(pagamento) {
+    return pagamento.customer.name
+  }
+  
+  function retornaBoleto(pagamento) {
+    if (pagamento.boleto_url && pagamento.boleto_barcode && pagamento.boleto_expiration_date) {
+      console.log(`URL do boleto: ${pagamento.boleto_url}`)
+      console.log(`Codigo de barras do boleto: ${pagamento.boleto_barcode}`)
+      console.log(`Data expiração do boleto: ${pagamento.boleto_expiration_date}`)
+    } else {
+      console.log(`Forma de pagamento: cartão.`)
+    }
+  }
+  
+  const cartao = {
+    status: [],
+    executar: function(pagamento) {
+      console.log(`Cliente: ${retornaNome(pagamento)}`)
+      cartao.nomeValido(pagamento)
+      cartao.nomeValido(pagamento)
+      cartao.bandeira(pagamento)
+      cartao.digitos(pagamento)
+      cartao.verficarData(pagamento)
+      cartao.verificarDataLocal(pagamento)
+      retornaBoleto(pagamento)
+      console.log(`Válido para compra: ${cartao.validoParaCompra()}`)
+    },
+    
+    nomeValido: function(pagamento) {
+      let situacao = false;
+      for (let cartao of cardsAvaiable) {
+        let titularCartao = cartao.card_holder_name
+        if (titularCartao != undefined) {
+          if (titularCartao == pagamento.card_holder_name) {
+            situacao = true
+          }
+        }
+      }
+      this.status.push(situacao)
+      return situacao
+    },
+  
+    bandeira: function(pagamento) {
+      let situacao = false
+      for (let cartao of cardsAvaiable) {
+        if (pagamento.card_brand != undefined && pagamento.card_brand == cartao.card_brand) {
+          situacao = true
+        }
+      }
+      this.status.push(situacao)
+      return situacao
+    },
+    digitos: function(pagamento) {
+      let situacao = false
+      let cartaoAPI = `${pagamento.card_fist_digits}${pagamento.card_last_digits}`
+  
+      for (let cartao of cardsAvaiable) {
+        let cartaoJSON = `${cartao.card_fist_digits}${cartao.card_last_digits}`
+        if (cartaoAPI == cartaoJSON) {
+          situacao = true
+        }
+      }
+      this.status.push(situacao)
+      return situacao
+  
+    },
+  
+    verficarData: function(pagamento) {
+      let situacao = false
+      let dataCartaoAPI = pagamento.card_expire_date
+      for (let cartao of cardsAvaiable) {
+        if (dataCartaoAPI == cartao.card_expire_date) {
+          situacao = true
+        }
+      }
+      this.status.push(situacao)
+      return situacao
+    },
+    verificarDataLocal: function(pagamento) {  2021
+      let situacao = false
+      let dataAtual = new Date() 
+      dataAtual = ((dataAtual.getMonth() + 1).toString().padStart(2, '0') + "/" + dataAtual.getFullYear().toString().substring(2,4)).split("/");
+      let dataExpiracao = pagamento.card_expire_date.split("/")
+      if (dataAtual[0] <=dataExpiracao[0]) {
+        situacao = true
+      } 
+      if (dataAtual[1] <= dataExpiracao[1]) {
+        situacao = true
+      } else {
+        situacao = false
+      }
+      this.status.push(situacao)
+      return situacao
+    },
+    validoParaCompra: function() {
+      let old = this.status
+      this.status = []
+      if (old.includes(false)) {
+        return false
+      }
+      return true
+    },
+  }
