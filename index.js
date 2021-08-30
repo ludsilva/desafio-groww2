@@ -189,7 +189,7 @@ function retornaNome(pagamento) {
       this.status.push(situacao)
       return situacao
     },
-    verificarDataLocal: function(pagamento) {  2021
+    verificarDataLocal: function(pagamento) {
       let situacao = false
       let dataAtual = new Date() 
       dataAtual = ((dataAtual.getMonth() + 1).toString().padStart(2, '0') + "/" + dataAtual.getFullYear().toString().substring(2,4)).split("/");
