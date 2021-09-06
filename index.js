@@ -105,11 +105,15 @@ async function main() {
     for (let getUrl of urlApi) {
       const dataReturn = await readApi(getUrl);
       //execute as funções aqui
-      console.log(` ***${getUrl.toUpperCase()}***`)
+      console.log(` ***${getUrl.toUpperCase()}***`);
       cartao.executar(dataReturn)
+      verificaQtdeItens(dataReturn);
+      scoreAntiFraude(dataReturn);
     }
 }
 main();
+
+// Larissa
 
 function retornaNome(pagamento) {
     return pagamento.customer.name
@@ -129,7 +133,6 @@ function retornaNome(pagamento) {
     status: [],
     executar: function(pagamento) {
       console.log(`Cliente: ${retornaNome(pagamento)}`)
-      cartao.nomeValido(pagamento)
       cartao.nomeValido(pagamento)
       cartao.bandeira(pagamento)
       cartao.digitos(pagamento)
@@ -215,3 +218,49 @@ function retornaNome(pagamento) {
       return true
     }
  }
+
+ //Ludmila
+
+ //Verificar se a quantidade de itens está disponível na base de dados
+ //Caso não exista, retornar quantos itens existem para aquele item
+
+ /*
+  quantidade de itens comprados == quantidade de itens na base de dados
+  saber quais itens foram comprados (id e quantidade)
+  comparar com a quantidade disponível
+  retornar o valor que tiver
+ */
+
+
+const verificaQtdeItens = (pagamento) => {
+  let mensagem;
+  for(produto of pagamento.items){
+    let idComprados = produto.id;
+    let qtdeComprados = produto.quantity;
+
+    for (let i = 0; i < produtosDisponiveis.length; i++){
+      let produtoDisponivel = produtosDisponiveis[i].id;
+      let qtdeDisponivel = produtosDisponiveis[i].avaiable;
+      if (produtoDisponivel === idComprados && qtdeDisponivel >= qtdeComprados){
+        mensagem = `Produto: ${produtoDisponivel}. Quantidade: ${qtdeDisponivel}. \nQuantidade comprada: ${qtdeComprados}`;
+      } else if (produtoDisponivel === idComprados && qtdeDisponivel < qtdeComprados){
+        mensagem = `Produto não disponível! \nQuantidade em estoque: ${qtdeDisponivel}`;
+      }
+    }
+    console.log(mensagem);
+  }
+};
+ 
+const scoreAntiFraude = (pagamento) => {
+  if (pagamento.antifraud_score >= 0 && pagamento.antifraud_score <= 49){
+    console.log(`*** Status *** \nQualquer compra é permitida`);
+  } else if (pagamento.antifraud_score >= 50 && pagamento.antifraud_score <= 69){
+    console.log(`*** Status *** \nLimite de compra é até 20 mil`);
+  } else if (pagamento.antifraud_score >= 70 && pagamento.antifraud_score <= 89){
+    console.log(`*** Status *** \nLimite de compra é até 10 mil`);
+  } else if (pagamento.antifraud_score > 90){
+    console.log(`*** Status *** \nNão será possível processar a compra`);
+  }
+};
+
+//Nathália
