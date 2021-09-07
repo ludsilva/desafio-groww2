@@ -221,17 +221,6 @@ function retornaNome(pagamento) {
 
  //Ludmila
 
- //Verificar se a quantidade de itens está disponível na base de dados
- //Caso não exista, retornar quantos itens existem para aquele item
-
- /*
-  quantidade de itens comprados == quantidade de itens na base de dados
-  saber quais itens foram comprados (id e quantidade)
-  comparar com a quantidade disponível
-  retornar o valor que tiver
- */
-
-
 const verificaQtdeItens = (pagamento) => {
   let mensagem;
   for(produto of pagamento.items){
